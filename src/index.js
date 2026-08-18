@@ -139,46 +139,17 @@ function writeUtf8(filePath, content) {
 }
 
 function extractAsar(asarPath, destDir) {
-    try {
-        const asar = require('@electron/asar');
-        asar.extractAll(asarPath, destDir);
-    } catch {
-        // Arguments are passed as an array so a path containing shell
-        // metacharacters cannot be interpreted as a command.
-        runNpx(['@electron/asar', 'extract', asarPath, destDir]);
-    }
+    const asar = require('@electron/asar');
+    asar.extractAll(asarPath, destDir);
 }
 
 async function packAsar(srcDir, destAsarPath) {
-    try {
-        const asar = require('@electron/asar');
-        // createPackageWithOptions returns a Promise; without awaiting it the
-        // archive copy below would read the file before it is written.
-        await asar.createPackageWithOptions(srcDir, destAsarPath, {
-            unpackDir: 'node_modules/chrome-devtools-mcp'
-        });
-    } catch {
-        runNpx([
-            '@electron/asar', 'pack',
-            '--unpack-dir', 'node_modules/chrome-devtools-mcp',
-            srcDir, destAsarPath
-        ]);
-    }
-}
-
-/**
- * Invoke the bundled asar CLI without going through a shell.
- *
- * The install directory comes from --app-dir or platform probing and ends up in
- * these arguments. Interpolating it into a shell string would let a path such as
- * `C:\x" & calc & "` execute arbitrary commands, so every argument is passed
- * separately instead.
- *
- * @param {string[]} args
- */
-function runNpx(args) {
-    const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    execFileSync(npx, ['--yes', ...args], { stdio: 'inherit', shell: false });
+    const asar = require('@electron/asar');
+    // createPackageWithOptions returns a Promise; without awaiting it the
+    // archive copy below would read the file before it is written.
+    await asar.createPackageWithOptions(srcDir, destAsarPath, {
+        unpackDir: 'node_modules/chrome-devtools-mcp'
+    });
 }
 
 function getFormatTimestamp() {
