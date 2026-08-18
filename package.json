@@ -42,7 +42,6 @@
   "files": [
     "bin/",
     "src/",
-    "scripts/",
     "README.md",
     "LICENSE"
   ]

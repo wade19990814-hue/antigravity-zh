@@ -54,33 +54,7 @@ node bin/cli.js status
 
 ---
 
-### 方式二：系统原生脚本
-
-#### 🪟 Windows (PowerShell)
-在外部 PowerShell 终端中执行：
-```powershell
-# 切换为中文
-.\scripts\patch.ps1 -Lang zh
-
-# 切换回英文
-.\scripts\patch.ps1 -Lang en
-```
-
-#### 🐧 Linux / 🍎 macOS (Bash)
-在终端中执行：
-```bash
-chmod +x scripts/patch.sh
-
-# 切换为中文
-./scripts/patch.sh zh
-
-# 切换回英文
-./scripts/patch.sh en
-```
-
----
-
-### 方式三：本地全局命令注册 (npm link)
+### 方式二：本地全局命令注册 (npm link)
 
 在项目目录下执行 `npm link`，即可在系统任意终端路径直接使用全局 `antigravity-zh` 命令：
 
@@ -150,9 +124,6 @@ antigravity-zh/
 │   └── patches/
 │       ├── engine.jsfrag         # 语言中立的 DOM 动态翻译引擎模板
 │       └── menu.jsfrag           # 语言中立的原生菜单翻译模板
-├── scripts/
-│   ├── patch.ps1                 # Windows 原生一键切换脚本 (PowerShell)
-│   └── patch.sh                  # Linux / macOS 原生一键切换脚本 (Bash)
 ├── test/
 │   ├── locale.test.js            # 语言包数据与引擎核心校验
 │   ├── dom.test.js               # DOM 遍历与 MutationObserver 注入测试

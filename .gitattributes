@@ -1,13 +1,6 @@
-# Normalize text files to LF in the repository.
-# This project ships a bash script and is consumed on Linux/macOS, where a
-# CRLF checkout would break `patch.sh` with a `\r: command not found` error.
+# Normalize text files to LF in the repository; the project is consumed on
+# Linux and macOS as well, where CRLF checkouts cause trouble.
 * text=auto eol=lf
-
-# PowerShell is Windows-first; keep CRLF in the working tree there.
-*.ps1 text eol=crlf
-
-# Shell scripts must always stay LF, regardless of platform or autocrlf.
-*.sh text eol=lf
 
 # Treat archives and images as binary if they ever get added.
 *.asar binary
