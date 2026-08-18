@@ -43,7 +43,10 @@ function getPossibleAppDirs() {
             '/opt/antigravity',
             '/usr/lib/antigravity',
             '/usr/share/antigravity',
-            path.join(homedir, 'antigravity')
+            path.join(homedir, 'antigravity'),
+            // Manually installed apps often live in ~/Applications (Electron
+            // updater installs Antigravity here with a capitalised name).
+            path.join(homedir, 'Applications', 'Antigravity')
         );
     }
 
