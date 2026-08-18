@@ -53,13 +53,13 @@
     },
     {
       "id": "customizationBudget",
-      "pattern": "^(\\d+(?:\\.\\d+)?%)\\s+of\\s+the\\s+customization\\s+budget\\s+is\\s+available(\\.?)$",
+      "pattern": "^(\\d+(?:\\.\\d+)?\\s*%)\\s+of\\s+the\\s+customization\\s+budget\\s+is\\s+available(\\.?)$",
       "flags": "i",
       "template": "可用自定义预算额度为 {1}{2}",
       "replace": {
         "2": "period"
       },
-      "sample": "50% of the customization budget is available."
+      "sample": "94.4 % of the customization budget is available."
     },
     {
       "id": "showBreakdowns",
@@ -119,6 +119,16 @@
       "flags": "i",
       "template": "{1} 个任务正在运行",
       "sample": "7 tasks running"
+    },
+    {
+      "id": "tokenUsage",
+      "pattern": "^(Rules|Skills):\\s*(\\d+)\\s*tokens?$",
+      "flags": "i",
+      "template": "{1}：{2} 个 token",
+      "replace": {
+        "1": "tokenSection"
+      },
+      "sample": "Rules: 848 tokens"
     }
   ],
   "valueMaps": {
@@ -140,6 +150,10 @@
     "period": {
       ".": "。",
       "": ""
+    },
+    "tokenSection": {
+      "Rules": "规则",
+      "Skills": "技能"
     }
   },
   "valueRules": {
@@ -729,6 +743,82 @@
     "Toggle Voice Recording": "切换语音录制",
     "Find in Pane": "在面板中查找",
     "No MCP Servers": "没有 MCP 服务端",
-    "You currently don't have any MCP Servers installed. Add an MCP server above": "您目前没有安装任何 MCP 服务端。请在上方添加一个 MCP 服务端"
+    "You currently don't have any MCP Servers installed. Add an MCP server above": "您目前没有安装任何 MCP 服务端。请在上方添加一个 MCP 服务端",
+    "Create New Project": "新建项目",
+    "New Project": "新项目",
+    "Project options": "项目选项",
+    "More options": "更多选项",
+    "More Actions": "更多操作",
+    "Archive conversation": "归档对话",
+    "Mark as Read": "标记为已读",
+    "Conversation": "对话",
+    "New": "新建",
+    "Quick Start": "快速开始",
+    "Select a folder.": "选择一个文件夹。",
+    "Add scheduled task": "添加定时任务",
+    "No scheduled tasks configured.": "尚未配置定时任务。",
+    "Add to Chat/Quote": "添加到聊天/引用",
+    "After": "之后",
+    "Now": "现在",
+    "Global": "全局",
+    "Recommended": "推荐",
+    "Queue": "排队",
+    "Queue until after the current turn.": "在当前回合结束后排队。",
+    "Interrupt the agent and send immediately.": "中断代理并立即发送。",
+    "Workspaces": "工作区",
+    "Navigation": "导航",
+    "Labs": "实验室",
+    "Developer": "开发者",
+    "Deprecated": "已弃用",
+    "Setup": "配置",
+    "Rules": "规则",
+    "Skills": "技能",
+    "Tab": "标签页",
+    "Marketplace": "市场",
+    "Models & Usage": "模型与用量",
+    "Editor Settings": "编辑器设置",
+    "Open Editor Settings": "打开编辑器设置",
+    "Keyboard shortcuts": "键盘快捷键",
+    "Layout Controls": "布局控制",
+    "Selection Actions": "选择操作",
+    "Show Selection Actions": "显示选择操作",
+    "Show \"Edit\" and \"Chat\" buttons when selecting text in the editor.": "在编辑器中选择文本时显示“编辑”和“聊天”按钮。",
+    "Next Pane Tab": "下一个面板标签",
+    "Previous Pane Tab": "上一个面板标签",
+    "Current sidebar grouping": "当前侧边栏分组",
+    "Sidebar after conversations are regrouped by workspace": "对话按工作区重新分组后的侧边栏",
+    "Regroup Google3 Chats": "重新分组 Google3 对话",
+    "Google3 chats will be regrouped into their workspaces in the sidebar.": "Google3 对话将按工作区重新分组到侧边栏。",
+    "Google3 chats will be regrouped into their workspaces in the sidebar. See": "Google3 对话将按工作区重新分组到侧边栏。请参阅",
+    "for more information (this migration is experimental).": "了解更多信息（此迁移为实验性功能）。",
+    "Turbo mode": "Turbo 模式",
+    "Avatar URL": "头像 URL",
+    "Bot Name": "机器人名称",
+    "Jetski Chat": "Jetski 聊天",
+    "Setup Jetski Chat": "配置 Jetski 聊天",
+    "Configure a chat bot so you can use Jetski directly from Google Chat.": "配置聊天机器人，以便直接在 Google Chat 中使用 Jetski。",
+    "For help, visit": "如需帮助，请访问",
+    "or join the": "或加入",
+    "Google Drive integration not available": "Google Drive 集成不可用",
+    "CitC Settings": "CitC 设置",
+    "Manage settings specific to Google CitC workspaces development.": "管理特定于 Google CitC 工作区开发的设置。",
+    "Manage your model quota and credits.": "管理您的模型配额和积分。",
+    "Weekly Limit Remaining": "每周限额剩余",
+    "Five Hour Limit Remaining": "五小时限额剩余",
+    "Refresh quota and credits data": "刷新配额和积分数据",
+    "Marketplace Gallery URL": "市场画廊 URL",
+    "Marketplace Item URL": "市场条目 URL",
+    "Changes the base URL for marketplace search results. You must restart Antigravity to use the new marketplace after changing this value.": "更改市场搜索结果的基础 URL。更改此值后，必须重启 Antigravity 才能使用新市场。",
+    "Changes the base URL on each extension page. You must restart Antigravity to use the new marketplace after changing this value.": "更改每个扩展页面的基础 URL。更改此值后，必须重启 Antigravity 才能使用新市场。",
+    "Copy path": "复制路径",
+    "Configure editor-specific behaviors and shortcuts.": "配置编辑器专属的行为和快捷键。",
+    "Configure tab completion, suggestions, and navigation behavior.": "配置标签补全、建议和导航行为。",
+    "To modify editor settings, open Settings within the editor window.": "要修改编辑器设置，请在编辑器窗口中打开设置。",
+    "Developer-only tools. These settings are stored locally in this browser and do not affect other users.": "开发者专用工具。这些设置仅存储在当前浏览器中，不会影响其他用户。",
+    "Try out early-stage features before they ship. These may change or be removed at any time.": "抢先体验早期功能。这些功能可能随时更改或移除。",
+    "Keep the app accessible from the menu bar and running in the background when all windows are closed.": "保留在菜单栏，当所有窗口关闭时仍在后台运行。",
+    "We recommend attaching logs. Attaching logs will help the Antigravity team act on and prioritize your feedback.": "我们建议附加日志。附加日志将帮助 Antigravity 团队处理并优先处理您的反馈。",
+    "Comprehensive guide and reference for the Antigravity Customization System. Use to explain how customizations work, their loading priority, discovery mechanisms, and to guide the creation of skills, rules, plugins, hooks, and MCP servers.": "Antigravity 自定义系统综合指南和参考。用于解释自定义项的工作原理、加载优先级、发现机制，并指导创建技能、规则、插件、钩子和 MCP 服务端。",
+    "Provides a comprehensive guide, quick reference, and sitemap for Google Antigravity (AGY), including the Antigravity CLI (agy), Antigravity 2.0, Antigravity IDE, Python SDK, slash commands, keybindings, and customizations (skills, rules, MCP, sidecars). Activate this skill when the user asks questions about how to use, configure, or customize Antigravity, AGY, the agy CLI, the Antigravity IDE, or Antigravity 2.0.": "提供 Google Antigravity (AGY) 的综合指南、快速参考和站点地图，包括 Antigravity CLI (agy)、Antigravity 2.0、Antigravity IDE、Python SDK、斜杠命令、快捷键和自定义项（技能、规则、MCP、sidecar）。当用户询问如何使用、配置或自定义 Antigravity、AGY、agy CLI、Antigravity IDE 或 Antigravity 2.0 时，激活此技能。"
   }
 }
