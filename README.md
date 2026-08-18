@@ -23,6 +23,7 @@
 - 🧩 **动态模式识别**：自动转换思考耗时（`Thought for Xs`）、限额倒计时、任务状态统计等动态信息。
 - 💾 **优雅关闭优先**：切换前先请求 Antigravity 正常退出并等待其保存状态，仅在超时仍未退出时才强制结束（可用 `--force` 跳过等待）。
 - 🧭 **可靠状态记录**：切换结果写入 `antigravity-zh-state.json`，`status` 命令完整扫描归档判定当前语言，不依赖固定偏移猜测。
+- 🌐 **数据驱动的词典架构**：翻译引擎与语言数据完全分离，词条、动态正则规则、标点映射全部放在 `src/locales/<code>.json`，新增语言只需添加一个 JSON 文件，无需修改引擎代码。
 
 ---
 
@@ -98,9 +99,11 @@ Commands:
   zh                切换为简体中文 (Simplified Chinese)
   en                还原官方原版英文 (Official English)
   status            查看当前安装路径、语言状态与备份状态
+  locales           查看本包内置的语言包列表
 
 Options:
   --app-dir <path>  自定义 Antigravity 安装目录（未安装在默认路径时使用）
+  --locale <code>   指定使用的翻译语言包（默认 zh-CN，可用 `locales` 命令查看）
   --no-restart      补丁完成后不自动重启应用
   --no-kill         不主动关闭 Antigravity（请自行先关闭应用）
   --force           跳过优雅关闭等待，立即强制结束 Antigravity
@@ -131,12 +134,25 @@ flowchart LR
 
 发现有新的界面未被翻译？欢迎为本项目贡献词条！
 
-1. 打开 [`src/patches/preload-zhcn.jsfrag`](./src/patches/preload-zhcn.jsfrag)
-2. 在 `zhCNText` Map 中添加新的中英对照项：
-   ```javascript
-   ['Original Text', '中文翻译'],
+1. 打开 [`src/locales/zh-CN.json`](./src/locales/zh-CN.json)
+2. 在 `text` 字段中添加新的中英对照项：
+   ```json
+   "Original Text": "中文翻译"
    ```
-3. 提交 Pull Request，详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+3. 运行 `npm test` 校验语言包格式，然后提交 Pull Request。
+
+### 新增一门语言
+
+引擎本身不含任何语言数据，因此新增语言不需要改动 JS 代码：
+
+1. 复制 `src/locales/zh-CN.json` 为 `src/locales/<语言代码>.json`（如 `ja-JP.json`）。
+2. 翻译 `text`（静态词条）与 `menu`（原生菜单）两个字段。
+3. 调整 `patterns` 中各条动态规则的 `template`，用 `{1}`、`{2}` 引用正则捕获组；
+   需要按值改写的部分（如时间单位）写进 `valueMaps`。
+4. 按目标语言习惯设置 `punctuation`（中文为全角映射，多数西文语言留空对象即可）与 `htmlLang`。
+5. 运行 `npm test`：语言包会被逐条校验（正则可编译、模板占位符不越界、引用的值表存在），
+   并用每条规则自带的 `sample` 验证匹配与输出确实生效。
+6. 用 `node bin/cli.js zh --locale <语言代码>` 实机验证后提交 PR。
 
 ---
 

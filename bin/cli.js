@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { switchToChinese, switchToEnglish, getStatus } = require('../src/index');
+const { DEFAULT_LOCALE, listLocales, loadLocale } = require('../src/locale');
 
 function printHelp() {
     console.log(`
@@ -15,9 +16,11 @@ Commands:
   zh                Switch Antigravity UI to Simplified Chinese (简体中文)
   en                Restore official English version (还原英文官方原版)
   status            Show current localization status and app path
+  locales           List the translation locales bundled with this package
 
 Options:
   --app-dir <path>  Specify custom installation directory of Antigravity
+  --locale <code>   Translation locale to apply (default: zh-CN; see the locales command)
   --no-restart      Do not restart Antigravity automatically after patching
   --no-kill         Do not stop running Antigravity processes (close it yourself first)
   --force           Skip the graceful-close wait and terminate Antigravity immediately
@@ -37,6 +40,7 @@ function parseArgs(args) {
     let restart = true;
     let noKill = false;
     let force = false;
+    let locale = DEFAULT_LOCALE;
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -49,6 +53,8 @@ function parseArgs(args) {
             process.exit(0);
         } else if (arg === '--app-dir') {
             appDir = args[++i];
+        } else if (arg === '--locale') {
+            locale = args[++i];
         } else if (arg === '--no-restart') {
             restart = false;
         } else if (arg === '--no-kill') {
@@ -60,7 +66,7 @@ function parseArgs(args) {
         }
     }
 
-    return { command, appDir, restart, noKill, force };
+    return { command, appDir, restart, noKill, force, locale };
 }
 
 function describeLanguage(language) {
@@ -70,9 +76,22 @@ function describeLanguage(language) {
 }
 
 async function main() {
-    const { command, appDir, restart, noKill, force } = parseArgs(process.argv.slice(2));
+    const { command, appDir, restart, noKill, force, locale } = parseArgs(process.argv.slice(2));
 
     try {
+        if (command === 'locales') {
+            console.log('\nBundled translation locales:');
+            for (const code of listLocales()) {
+                const data = loadLocale(code);
+                const entries = Object.keys(data.text || {}).length;
+                const patterns = (data.patterns || []).length;
+                const isDefault = code === DEFAULT_LOCALE ? '  (default)' : '';
+                console.log(`  ${code.padEnd(8)} ${data.name || ''} - ${entries} entries, ${patterns} dynamic rules${isDefault}`);
+            }
+            console.log('\nApply one with: npx antigravity-zh zh --locale <code>\n');
+            return;
+        }
+
         if (command === 'status') {
             const status = getStatus({ appDir });
             console.log('\n--- Antigravity Localization Status ---');
@@ -92,7 +111,7 @@ async function main() {
 
         if (command === 'zh' || command === 'cn' || command === 'chinese') {
             console.log('\n>>> Switching Antigravity to Chinese (简体中文)...');
-            switchToChinese({ appDir, restart, noKill, force });
+            switchToChinese({ appDir, restart, noKill, force, locale });
         } else if (command === 'en' || command === 'english' || command === 'restore') {
             console.log('\n>>> Restoring official English version...');
             switchToEnglish({ appDir, restart, noKill, force });

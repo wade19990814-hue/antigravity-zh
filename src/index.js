@@ -9,10 +9,46 @@ const {
     readState,
     writeState
 } = require('./detector');
+const {
+    DEFAULT_LOCALE,
+    buildMenuFragment,
+    buildPreloadFragment,
+    listLocales,
+    loadLocale
+} = require('./locale');
 
 // Markers injected by our patch fragments. Presence of any of these inside the
 // packed archive means a Chinese patch is installed.
-const PATCH_MARKERS = ['installZhCNPatch', 'const zhCNText = new Map([', 'function translateMenu(menu)'];
+// Any of these inside the packed archive means a localization patch is present.
+// installLocalePatch is emitted by the current engine; installZhCNPatch and
+// zhCNText are legacy markers from pre-locale versions.
+const PATCH_MARKERS = [
+    'installLocalePatch',
+    'installZhCNPatch',
+    'const zhCNText = new Map([',
+    'function translateMenu(menu)'
+];
+
+// Start-of-block markers for an injected engine. The current builder emits
+// AG_LOCALE; the zhCNText form is kept so installs patched by earlier versions
+// are still recognised and cleanly replaced rather than duplicated.
+const ENGINE_START_MARKERS = ['const AG_LOCALE = ', 'const zhCNText = new Map(['];
+
+/**
+ * Locate a previously injected translation engine inside preload.js.
+ *
+ * @param {string} preload
+ * @returns {number} Index of the injected block, or -1 when absent.
+ */
+function findInjectedEngineStart(preload) {
+    for (const marker of ENGINE_START_MARKERS) {
+        const index = preload.indexOf(marker);
+        if (index >= 0) {
+            return index;
+        }
+    }
+    return -1;
+}
 
 function readUtf8(filePath) {
     return fs.readFileSync(filePath, 'utf8');
@@ -198,13 +234,12 @@ function findPristineArchive(resourcesDir) {
 
 function switchToChinese(options = {}) {
     const { appDir, resourcesDir, asarPath, cleanBackupPath, statePath } = resolveAppPaths(options.appDir);
-    const patchDir = path.join(__dirname, 'patches');
-    const preloadFragmentPath = path.join(patchDir, 'preload-zhcn.jsfrag');
-    const menuFragmentPath = path.join(patchDir, 'menu-translate.jsfrag');
-
-    if (!fs.existsSync(preloadFragmentPath) || !fs.existsSync(menuFragmentPath)) {
-        throw new Error(`Missing translation patch fragments in ${patchDir}`);
-    }
+    // Locale data is validated before anything is modified, so a malformed
+    // locale fails fast instead of producing a broken UI after the rewrite.
+    const localeCode = options.locale || DEFAULT_LOCALE;
+    const locale = loadLocale(localeCode);
+    const preloadFragment = buildPreloadFragment(locale);
+    const menuFragment = buildMenuFragment(locale);
 
     if (!options.noKill) {
         closeAntigravityOrThrow(options);
@@ -272,7 +307,6 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
         // 2. Patch menu.js (inject menu translations)
         console.log('Injecting menu translations into menu.js...');
         let menu = readUtf8(menuPath);
-        const menuFragment = readUtf8(menuFragmentPath);
         if (!menu.includes('translateMenu(menu);')) {
             menu = menu.replace(/(\s*)\/\/\s*Re-apply the menu so the change takes effect\./, '$1translateMenu(menu);\n$1// Re-apply the menu so the change takes effect.');
         }
@@ -284,8 +318,9 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
         // 3. Patch preload.js (inject DOM translation engine)
         console.log('Injecting DOM translation engine into preload.js...');
         let preload = readUtf8(preloadPath);
-        const preloadFragment = readUtf8(preloadFragmentPath);
-        const existingStart = preload.indexOf('const zhCNText = new Map([');
+        // Replace a previously injected block when present, so re-running the
+        // patch (or switching locale) never stacks two translation engines.
+        const existingStart = findInjectedEngineStart(preload);
         const updaterStart = preload.indexOf('const updaterAPI = {');
 
         if (existingStart >= 0 && updaterStart > existingStart) {

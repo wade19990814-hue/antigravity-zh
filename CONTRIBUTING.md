@@ -29,21 +29,43 @@
 
 ## 📝 词条贡献规范
 
-所有渲染层翻译内容集中在 [`src/patches/preload-zhcn.jsfrag`](./src/patches/preload-zhcn.jsfrag) 中：
+所有语言数据集中在 [`src/locales/zh-CN.json`](./src/locales/zh-CN.json) 中，翻译引擎
+（[`src/patches/engine.jsfrag`](./src/patches/engine.jsfrag)）不含任何语言相关内容，
+因此增补词条通常只需修改 JSON：
+
+语言包的字段含义与约束均记录在 [`src/locales/locale.schema.json`](./src/locales/locale.schema.json)，
+支持 JSON Schema 的编辑器会据此提供补全与实时校验。
 
 ### 1. 静态词条增补
-在 `zhCNText` Map 中添加新的键值对：
-```javascript
-['English Text', '中文翻译'],
+在 `text` 字段中添加新的键值对：
+```json
+"English Text": "中文翻译"
 ```
 * **去首尾空格**：由于 DOM 遍历时会对文本做 `.trim()`，字典中的 Key **请勿带有首尾多余空格**。
 * **专业术语保留**：专有名词（如 `skills`、`MCP`、`Monaco` 等）通常保留原词，不建议生硬机翻。
 
 ### 2. 带有超链接/拆分 DOM 的长句
-如果一个长句中间包含 `<a>` 链接（例如 `Google Chrome`），React 会将其拆分为多个独立的 TextNode。请将前半句和后半句**分别**作为一个独立的 Key 添加到 Map 中。
+如果一个长句中间包含 `<a>` 链接（例如 `Google Chrome`），React 会将其拆分为多个独立的 TextNode。请将前半句和后半句**分别**作为一个独立的 Key 添加到 `text` 中。
 
 ### 3. 动态参数/正则规则
-对于带有时间、数字、邮箱等变量的字符串，请在 `hasTranslation()` 和 `translateString()` 的动态处理区块中扩展对应的正则表达式。
+对于带有时间、数字、邮箱等变量的字符串，在 `patterns` 数组中新增一条规则即可，无需改动引擎代码：
+
+```json
+{
+  "id": "tasksRunning",
+  "pattern": "^(\\d+) tasks? running$",
+  "flags": "i",
+  "template": "{1} 个任务正在运行",
+  "sample": "7 tasks running"
+}
+```
+
+* `template` 中用 `{1}`、`{2}` 引用正则的捕获组。
+* 若某个捕获组需要按值翻译（如时间单位 `s` → `秒`），在 `replace` 中指向 `valueMaps` 里的一张表：
+  `"replace": { "2": "durationUnit" }`。
+* 若需要在捕获组内部做多次替换（如 `2 days, 3 hours`），使用 `valueRules`。
+* `sample` 是必填的自测样例：`npm test` 会验证该规则确实匹配它并产生了变化，
+  避免出现"判定可翻译但实际没翻译"的不一致。
 
 ---
 

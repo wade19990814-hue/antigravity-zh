@@ -10,7 +10,8 @@
     "zh": "node bin/cli.js zh",
     "en": "node bin/cli.js en",
     "status": "node bin/cli.js status",
-    "test": "node --check bin/cli.js && node --check src/index.js && node --check src/detector.js"
+    "locales": "node bin/cli.js locales",
+    "test": "node --check bin/cli.js && node --check src/index.js && node --check src/detector.js && node --check src/locale.js && node test/locale.test.js"
   },
   "keywords": [
     "antigravity",

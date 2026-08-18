@@ -1,0 +1,15 @@
+/**
+ * Native application menu translation. Locale neutral: the label map is
+ * injected as MENU_DATA when the fragment is built.
+ */
+function translateMenu(menu) {
+    const labels = new Map(Object.entries(MENU_DATA_PLACEHOLDER));
+    const visit = (item) => {
+        const label = item.label;
+        if (label && labels.has(label)) {
+            item.label = labels.get(label);
+        }
+        item.submenu?.items.forEach(visit);
+    };
+    menu.items.forEach(visit);
+}
