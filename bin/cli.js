@@ -1,0 +1,110 @@
+#!/usr/bin/env node
+
+const { switchToChinese, switchToEnglish, getStatus } = require('../src/index');
+
+function printHelp() {
+    console.log(`
+Antigravity Localization CLI (antigravity-zh)
+One-command language switcher for Antigravity Desktop App (Windows / Linux / macOS)
+
+Usage:
+  npx antigravity-zh <command> [options]
+  node bin/cli.js <command> [options]
+
+Commands:
+  zh                Switch Antigravity UI to Simplified Chinese (简体中文)
+  en                Restore official English version (还原英文官方原版)
+  status            Show current localization status and app path
+
+Options:
+  --app-dir <path>  Specify custom installation directory of Antigravity
+  --no-restart      Do not restart Antigravity automatically after patching
+  --no-kill         Do not stop running Antigravity processes (close it yourself first)
+  --force           Skip the graceful-close wait and terminate Antigravity immediately
+  -h, --help        Show this help message
+  -v, --version     Show package version
+
+Examples:
+  npx antigravity-zh zh
+  npx antigravity-zh en
+  node bin/cli.js zh --app-dir "C:\\Users\\YourName\\AppData\\Local\\Programs\\antigravity"
+`);
+}
+
+function parseArgs(args) {
+    let command = 'zh';
+    let appDir = null;
+    let restart = true;
+    let noKill = false;
+    let force = false;
+
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (arg === '-h' || arg === '--help' || arg === 'help') {
+            printHelp();
+            process.exit(0);
+        } else if (arg === '-v' || arg === '--version') {
+            const pkg = require('../package.json');
+            console.log(`v${pkg.version}`);
+            process.exit(0);
+        } else if (arg === '--app-dir') {
+            appDir = args[++i];
+        } else if (arg === '--no-restart') {
+            restart = false;
+        } else if (arg === '--no-kill') {
+            noKill = true;
+        } else if (arg === '--force') {
+            force = true;
+        } else if (!arg.startsWith('-')) {
+            command = arg.toLowerCase();
+        }
+    }
+
+    return { command, appDir, restart, noKill, force };
+}
+
+function describeLanguage(language) {
+    if (language === 'zh') return '简体中文 (zh-CN)';
+    if (language === 'en') return 'English (Official)';
+    return 'Unknown (could not read app.asar)';
+}
+
+async function main() {
+    const { command, appDir, restart, noKill, force } = parseArgs(process.argv.slice(2));
+
+    try {
+        if (command === 'status') {
+            const status = getStatus({ appDir });
+            console.log('\n--- Antigravity Localization Status ---');
+            console.log(`App Directory:    ${status.appDir}`);
+            console.log(`ASAR File:        ${status.asarPath}`);
+            console.log(`Current Language: ${describeLanguage(status.currentLanguage)}`);
+            console.log(`Clean Backup:     ${status.hasCleanBackup ? 'Available (Ready for 1-click restore)' : 'Not yet created'}`);
+            if (status.lastPatchedAt) {
+                console.log(`Last Switched:    ${status.lastPatchedAt}`);
+            }
+            if (status.stateIsStale) {
+                console.log('Note:             app.asar changed outside this tool (likely an Antigravity update).');
+            }
+            console.log('----------------------------------------\n');
+            return;
+        }
+
+        if (command === 'zh' || command === 'cn' || command === 'chinese') {
+            console.log('\n>>> Switching Antigravity to Chinese (简体中文)...');
+            switchToChinese({ appDir, restart, noKill, force });
+        } else if (command === 'en' || command === 'english' || command === 'restore') {
+            console.log('\n>>> Restoring official English version...');
+            switchToEnglish({ appDir, restart, noKill, force });
+        } else {
+            console.error(`\nUnknown command: "${command}"`);
+            printHelp();
+            process.exit(1);
+        }
+    } catch (err) {
+        console.error(`\n[Error] ${err.message}`);
+        process.exit(1);
+    }
+}
+
+main();

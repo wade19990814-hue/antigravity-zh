@@ -1,0 +1,48 @@
+{
+  "name": "antigravity-zh",
+  "version": "1.0.0",
+  "description": "One-command Simplified Chinese localization & switcher for Antigravity desktop app (Windows & Linux)",
+  "main": "src/index.js",
+  "bin": {
+    "antigravity-zh": "bin/cli.js"
+  },
+  "scripts": {
+    "zh": "node bin/cli.js zh",
+    "en": "node bin/cli.js en",
+    "status": "node bin/cli.js status",
+    "test": "node --check bin/cli.js && node --check src/index.js && node --check src/detector.js"
+  },
+  "keywords": [
+    "antigravity",
+    "localization",
+    "i18n",
+    "l10n",
+    "zh-cn",
+    "chinese",
+    "translation",
+    "electron"
+  ],
+  "author": "wade19990814-hue",
+  "license": "MIT",
+  "dependencies": {
+    "@electron/asar": "^3.2.14"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wade19990814-hue/antigravity-zh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wade19990814-hue/antigravity-zh/issues"
+  },
+  "homepage": "https://github.com/wade19990814-hue/antigravity-zh#readme",
+  "files": [
+    "bin/",
+    "src/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ]
+}
