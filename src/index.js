@@ -303,15 +303,35 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
                 writeUtf8(mainPath, main);
             }
         }
+        if (!main.includes("appendSwitch('lang'")) {
+            throw new Error(
+                'Could not apply the language switch to main.js: the expected code pattern was not found. '
+                + 'Antigravity was likely updated to a build this patch does not recognise; '
+                + 'report this so the anchor can be updated.'
+            );
+        }
 
         // 2. Patch menu.js (inject menu translations)
         console.log('Injecting menu translations into menu.js...');
         let menu = readUtf8(menuPath);
+        // Replace a previously injected block when present so re-running the
+        // patch (or switching locale) refreshes menu data instead of keeping
+        // stale labels injected by an older build.
+        const existingMenuStart = menu.indexOf('function translateMenu(menu)');
+        if (existingMenuStart >= 0) {
+            menu = menu.substring(0, existingMenuStart).trimEnd() + '\n\n' + menuFragment + '\n';
+        } else {
+            menu = menu.trimEnd() + '\n\n' + menuFragment + '\n';
+        }
         if (!menu.includes('translateMenu(menu);')) {
             menu = menu.replace(/(\s*)\/\/\s*Re-apply the menu so the change takes effect\./, '$1translateMenu(menu);\n$1// Re-apply the menu so the change takes effect.');
         }
-        if (!menu.includes('function translateMenu(menu)')) {
-            menu = menu.trimEnd() + '\n\n' + menuFragment + '\n';
+        if (!menu.includes('translateMenu(menu);')) {
+            throw new Error(
+                'Could not wire translateMenu into menu.js: the "Re-apply the menu" anchor was not found. '
+                + 'Antigravity was likely updated to a build this patch does not recognise; '
+                + 'report this so the anchor can be updated.'
+            );
         }
         writeUtf8(menuPath, menu);
 
