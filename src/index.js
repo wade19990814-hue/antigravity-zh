@@ -67,10 +67,12 @@ function extractAsar(asarPath, destDir) {
     }
 }
 
-function packAsar(srcDir, destAsarPath) {
+async function packAsar(srcDir, destAsarPath) {
     try {
         const asar = require('@electron/asar');
-        asar.createPackageWithOptions(srcDir, destAsarPath, {
+        // createPackageWithOptions returns a Promise; without awaiting it the
+        // archive copy below would read the file before it is written.
+        await asar.createPackageWithOptions(srcDir, destAsarPath, {
             unpackDir: 'node_modules/chrome-devtools-mcp'
         });
     } catch {
@@ -232,7 +234,7 @@ function findPristineArchive(resourcesDir) {
     return null;
 }
 
-function switchToChinese(options = {}) {
+async function switchToChinese(options = {}) {
     const { appDir, resourcesDir, asarPath, cleanBackupPath, statePath } = resolveAppPaths(options.appDir);
     // Locale data is validated before anything is modified, so a malformed
     // locale fails fast instead of producing a broken UI after the rewrite.
@@ -360,7 +362,7 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
 
         // 5. Repack asar
         console.log('Packing patched app.asar...');
-        packAsar(extractDir, packedPath);
+        await packAsar(extractDir, packedPath);
 
         fs.copyFileSync(packedPath, asarPath);
         writeState(statePath, 'zh', asarPath);

@@ -111,7 +111,7 @@ async function main() {
 
         if (command === 'zh' || command === 'cn' || command === 'chinese') {
             console.log('\n>>> Switching Antigravity to Chinese (简体中文)...');
-            switchToChinese({ appDir, restart, noKill, force, locale });
+            await switchToChinese({ appDir, restart, noKill, force, locale });
         } else if (command === 'en' || command === 'english' || command === 'restore') {
             console.log('\n>>> Restoring official English version...');
             switchToEnglish({ appDir, restart, noKill, force });
