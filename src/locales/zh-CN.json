@@ -197,6 +197,7 @@
     "Select All": "全选"
   },
   "text": {
+    "Run": "运行",
     "Agent": "代理",
     "Configure agent execution, queued message delivery, and permissions.": "配置代理执行、排队消息投递和权限。",
     "Execution": "执行",
