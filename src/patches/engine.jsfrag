@@ -1,3 +1,4 @@
+/* antigravity-zh:begin */
 /**
  * Locale-neutral DOM translation engine.
  *
@@ -5,6 +6,10 @@
  * dictionary, the dynamic patterns, punctuation mapping and <html lang> -- is
  * injected as LOCALE_DATA when the fragment is built, so adding a language means
  * adding a JSON file under src/locales/ rather than editing this logic.
+ *
+ * The antigravity-zh:begin/end sentinels delimit this whole block so a re-run
+ * replaces it exactly. Locating it by a code identifier instead would leave the
+ * leading comment behind and grow the file on every run.
  */
 const AG_LOCALE = LOCALE_DATA_PLACEHOLDER;
 const agText = new Map(Object.entries(AG_LOCALE.text || {}));
@@ -305,3 +310,4 @@ if (document.readyState === 'loading') {
 else {
     installLocalePatch();
 }
+/* antigravity-zh:end */

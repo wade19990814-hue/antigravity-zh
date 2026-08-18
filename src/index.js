@@ -29,25 +29,105 @@ const PATCH_MARKERS = [
     'function translateMenu(menu)'
 ];
 
-// Start-of-block markers for an injected engine. The current builder emits
-// AG_LOCALE; the zhCNText form is kept so installs patched by earlier versions
-// are still recognised and cleanly replaced rather than duplicated.
-const ENGINE_START_MARKERS = ['const AG_LOCALE = ', 'const zhCNText = new Map(['];
+// Sentinels wrapping every injected block. Fragments carry them, so a re-run can
+// excise the previous block exactly instead of guessing its bounds.
+const BLOCK_BEGIN = '/* antigravity-zh:begin */';
+const BLOCK_END = '/* antigravity-zh:end */';
+
+// Fallback start markers for blocks injected before sentinels existed. Matching
+// on a code identifier cannot see the fragment's leading comment, so these are
+// only used when no sentinel is present.
+const LEGACY_ENGINE_START_MARKERS = ['const AG_LOCALE = ', 'const zhCNText = new Map(['];
+const LEGACY_MENU_START_MARKER = 'function translateMenu(menu)';
+
+// The engine must run before the preload script exposes its bridges, so a fresh
+// injection goes immediately above this declaration.
+const UPDATER_ANCHOR = 'const updaterAPI = {';
 
 /**
- * Locate a previously injected translation engine inside preload.js.
+ * Remove a previously injected block so the new one replaces it exactly.
  *
- * @param {string} preload
- * @returns {number} Index of the injected block, or -1 when absent.
+ * Re-running the patch must not stack copies. The sentinel pair is authoritative
+ * and every sentinel-delimited block is removed, which also repairs a file that
+ * already accumulated duplicates. Legacy blocks (written before sentinels
+ * existed) are located by a code marker, so their extent has to be supplied:
+ * `legacy.endMarker` bounds the block, and its absence means it ran to EOF.
+ *
+ * Whitespace around the removed block is collapsed to a single newline so that
+ * re-injecting is byte-stable: without this, every run leaves one more blank
+ * line and app.asar keeps changing even though the patch is identical.
+ *
+ * @param {string} source
+ * @param {object} legacy
+ * @param {string[]} legacy.startMarkers
+ * @param {string} [legacy.endMarker]
+ * @returns {{ head: string, tail: string, replaced: boolean }} The source split
+ *   at the block's position, with surrounding whitespace normalized.
  */
-function findInjectedEngineStart(preload) {
-    for (const marker of ENGINE_START_MARKERS) {
-        const index = preload.indexOf(marker);
-        if (index >= 0) {
-            return index;
+function splitAtInjectedBlock(source, legacy = {}) {
+    let cleaned = source;
+    let head = null;
+
+    // Remove every sentinel-delimited block, so a file that already accumulated
+    // duplicates is repaired instead of merely not made worse. The first block's
+    // position is where the replacement goes.
+    for (;;) {
+        const begin = cleaned.indexOf(BLOCK_BEGIN);
+        if (begin < 0) break;
+        const end = cleaned.indexOf(BLOCK_END, begin);
+        if (end < 0) break;
+        const before = cleaned.slice(0, begin);
+        const after = cleaned.slice(end + BLOCK_END.length);
+        if (head === null) {
+            head = before;
         }
+        cleaned = before + after;
     }
-    return -1;
+    if (head !== null) {
+        return { head: head.replace(/\s+$/, ''), tail: cleaned.slice(head.length).replace(/^\s+/, ''), replaced: true };
+    }
+
+    for (const marker of legacy.startMarkers || []) {
+        const index = cleaned.indexOf(marker);
+        if (index < 0) {
+            continue;
+        }
+        const endIndex = legacy.endMarker ? cleaned.indexOf(legacy.endMarker, index) : -1;
+        const cutTo = endIndex > index ? endIndex : cleaned.length;
+        return {
+            head: cleaned.slice(0, index).replace(/\s+$/, ''),
+            tail: cleaned.slice(cutTo).replace(/^\s+/, ''),
+            replaced: true
+        };
+    }
+    return { head: cleaned, tail: '', replaced: false };
+}
+
+/**
+ * Insert a fragment into a file, replacing any block a previous run injected.
+ *
+ * @param {string} source
+ * @param {string} fragment
+ * @param {object} [legacy]
+ * @param {string} [fallbackAnchor] Anchor to insert before when nothing was
+ *   previously injected. Appended at EOF when the anchor is absent.
+ * @returns {string}
+ */
+function injectFragment(source, fragment, legacy = {}, fallbackAnchor) {
+    const split = splitAtInjectedBlock(source, legacy);
+    if (split.replaced) {
+        return split.tail
+            ? `${split.head}\n\n${fragment}\n\n${split.tail}`
+            : `${split.head}\n\n${fragment}\n`;
+    }
+
+    const anchorAt = fallbackAnchor ? source.indexOf(fallbackAnchor) : -1;
+    if (anchorAt >= 0) {
+        const head = source.slice(0, anchorAt).replace(/\s+$/, '');
+        const tail = source.slice(anchorAt);
+        return `${head}\n\n${fragment}\n\n${tail}`;
+    }
+    return `${source.replace(/\s+$/, '')}\n\n${fragment}\n`;
 }
 
 function readUtf8(filePath) {
@@ -318,13 +398,9 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
         let menu = readUtf8(menuPath);
         // Replace a previously injected block when present so re-running the
         // patch (or switching locale) refreshes menu data instead of keeping
-        // stale labels injected by an older build.
-        const existingMenuStart = menu.indexOf('function translateMenu(menu)');
-        if (existingMenuStart >= 0) {
-            menu = menu.substring(0, existingMenuStart).trimEnd() + '\n\n' + menuFragment + '\n';
-        } else {
-            menu = menu.trimEnd() + '\n\n' + menuFragment + '\n';
-        }
+        // stale labels injected by an older build. A legacy menu block was always
+        // appended last, so it ran to EOF.
+        menu = injectFragment(menu, menuFragment, { startMarkers: [LEGACY_MENU_START_MARKER] });
         if (!menu.includes('translateMenu(menu);')) {
             menu = menu.replace(/(\s*)\/\/\s*Re-apply the menu so the change takes effect\./, '$1translateMenu(menu);\n$1// Re-apply the menu so the change takes effect.');
         }
@@ -341,17 +417,14 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
         console.log('Injecting DOM translation engine into preload.js...');
         let preload = readUtf8(preloadPath);
         // Replace a previously injected block when present, so re-running the
-        // patch (or switching locale) never stacks two translation engines.
-        const existingStart = findInjectedEngineStart(preload);
-        const updaterStart = preload.indexOf('const updaterAPI = {');
-
-        if (existingStart >= 0 && updaterStart > existingStart) {
-            preload = preload.substring(0, existingStart) + preloadFragment + '\n' + preload.substring(updaterStart);
-        } else if (updaterStart > 0) {
-            preload = preload.substring(0, updaterStart) + preloadFragment + '\n' + preload.substring(updaterStart);
-        } else {
-            preload = preload + '\n\n' + preloadFragment + '\n';
-        }
+        // patch (or switching locale) never stacks two translation engines. A
+        // legacy engine block ended where updaterAPI began.
+        preload = injectFragment(
+            preload,
+            preloadFragment,
+            { startMarkers: LEGACY_ENGINE_START_MARKERS, endMarker: UPDATER_ANCHOR },
+            UPDATER_ANCHOR
+        );
         writeUtf8(preloadPath, preload);
 
         // 4. Syntax verification
@@ -424,5 +497,13 @@ function switchToEnglish(options = {}) {
 module.exports = {
     getStatus,
     switchToChinese,
-    switchToEnglish
+    switchToEnglish,
+    // Exported for tests: re-patching must be byte-stable, which is easier to
+    // assert directly than by repacking a real archive.
+    injectFragment,
+    BLOCK_BEGIN,
+    BLOCK_END,
+    LEGACY_ENGINE_START_MARKERS,
+    LEGACY_MENU_START_MARKER,
+    UPDATER_ANCHOR
 };
