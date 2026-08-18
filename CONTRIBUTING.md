@@ -1,10 +1,8 @@
-# 贡献指南 (Contributing Guide)
+# 贡献指南
 
-感谢你关注并愿意为 **antigravity-zh** 贡献力量！无论是修复翻译错漏、补充新版本 UI 词条，还是优化匹配正则与跨平台支持，我们都非常欢迎。
+欢迎补充词条、修正译法、适配新版本界面，或提交其他语言的语言包。
 
----
-
-## 🛠️ 本地开发与调试流程
+## 本地开发
 
 1. **Fork 本仓库** 并克隆到本地：
    ```bash
@@ -27,7 +25,7 @@
 
 ---
 
-## 📝 词条贡献规范
+## 词条规范
 
 所有语言数据集中在 [`src/locales/zh-CN.json`](./src/locales/zh-CN.json) 中，翻译引擎
 （[`src/patches/engine.jsfrag`](./src/patches/engine.jsfrag)）不含任何语言相关内容，
@@ -69,7 +67,7 @@
 
 ---
 
-## 🚀 提交 Pull Request (PR)
+## 提交 Pull Request
 
 1. 创建你的特性分支：
    ```bash

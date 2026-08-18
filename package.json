@@ -1,7 +1,7 @@
 {
   "name": "antigravity-zh",
   "version": "1.0.0",
-  "description": "One-command Simplified Chinese localization & switcher for Antigravity desktop app (Windows & Linux)",
+  "description": "为 Google Antigravity 桌面端启用简体中文界面，并支持一条命令还原官方英文。One-command Simplified Chinese localization for the Antigravity desktop app, with byte-exact restore.",
   "main": "src/index.js",
   "bin": {
     "antigravity-zh": "bin/cli.js"
@@ -21,7 +21,10 @@
     "zh-cn",
     "chinese",
     "translation",
-    "electron"
+    "electron",
+    "asar",
+    "简体中文",
+    "汉化"
   ],
   "author": "wade19990814-hue",
   "license": "MIT",
