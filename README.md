@@ -154,7 +154,8 @@ antigravity-zh/
 │   ├── patch.ps1                 # Windows 原生一键切换脚本 (PowerShell)
 │   └── patch.sh                  # Linux / macOS 原生一键切换脚本 (Bash)
 ├── test/
-│   └── locale.test.js            # 离线自动化测试套件 (4000+ 覆盖用例)
+│   ├── locale.test.js            # 语言包数据与引擎核心校验
+│   └── dom.test.js               # DOM 遍历与 MutationObserver 注入测试
 ├── package.json                  # 项目配置
 ├── README.md                     # 项目说明文档
 ├── CONTRIBUTING.md               # 词条贡献指南
