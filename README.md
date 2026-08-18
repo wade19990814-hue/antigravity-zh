@@ -1,33 +1,35 @@
 # antigravity-zh
 
-为 [Google Antigravity](https://antigravity.google/) 桌面端提供简体中文界面，并保留一条命令还原官方英文的退路。
+[简体中文](./README.zh-CN.md)
+
+Simplified Chinese localization and one-command language switching for the [Google Antigravity](https://antigravity.google/) desktop app.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Node](https://img.shields.io/badge/node-%3E%3D16-brightgreen?style=flat-square)
 
-## 它做什么
+## What it does
 
-Antigravity 桌面端目前只有英文界面。本工具解包应用的 `app.asar`，向渲染进程注入一段翻译引擎和一份词典，重新打包后界面即为中文。首次运行会保存一份官方原始归档，`en` 命令直接用它覆盖回去，恢复结果与安装时逐字节相同。
+antigravity-zh patches the renderer and native menus of the Antigravity desktop app. It keeps an untouched copy of the official `app.asar` so the `en` command can restore the official English files.
 
-当前语言包含 609 条静态词条、28 条原生菜单词条和 13 条动态规则（用于`Thought for 5s`、`3 tasks running`这类含运行时数值的文本）。
+The bundled Simplified Chinese locale currently contains 609 static translations, 28 native menu labels, and 13 rules for dynamic text such as `Thought for 5s` and `3 tasks running`.
 
-## 安装与使用
+## Install and use
 
-需要 Node.js 16 或更高版本。
+Requires Node.js 16 or later.
 
 ```bash
-# 切换为中文
+# Switch to Simplified Chinese
 npx antigravity-zh zh
 
-# 还原官方英文
+# Restore the official English version
 npx antigravity-zh en
 
-# 查看当前语言、安装路径与备份状态
+# Show language, installation path, and backup status
 npx antigravity-zh status
 ```
 
-也可以克隆源码运行：
+To run from source:
 
 ```bash
 git clone https://github.com/wade19990814-hue/antigravity-zh.git
@@ -36,65 +38,64 @@ npm install
 node bin/cli.js zh
 ```
 
-### 命令与参数
+### Commands and options
 
 ```text
 Commands:
-  zh                切换为简体中文
-  en                还原官方原版英文
-  status            查看当前语言、安装路径与备份状态
-  locales           列出内置的语言包
+  zh                Switch to Simplified Chinese
+  en                Restore the official English version
+  status            Show language, installation path, and backup status
+  locales           List bundled locales
 
 Options:
-  --app-dir <path>  指定 Antigravity 安装目录（未装在默认路径时使用）
-  --locale <code>   指定语言包（默认 zh-CN）
-  --no-restart      补丁完成后不自动重启应用
-  --no-kill         不主动关闭 Antigravity（需自行先关闭）
-  --force           跳过优雅关闭等待，立即强制结束进程
-  -h, --help        查看帮助
-  -v, --version     查看版本号
+  --app-dir <path>  Specify the Antigravity installation directory
+  --locale <code>   Select a locale (default: zh-CN)
+  --no-restart      Do not restart the app after patching
+  --no-kill         Do not stop Antigravity automatically
+  --force           Skip the graceful shutdown wait and force-terminate
+  -h, --help        Show help
+  -v, --version     Show the version
 ```
 
-## 重要须知
+## Important notes
 
-**这是一个修改应用文件的工具，请在动手前读完本节。**
+**This tool modifies an installed application. Read this section before using it.**
 
-- **需要关闭 Antigravity。** 改写 `app.asar` 要求应用未运行。工具会先请求正常退出并等待最多 20 秒让它保存状态，超时才强制结束。请自行保存未完成的工作，或先手动关闭应用再配合 `--no-kill` 使用。
-- **官方更新会覆盖补丁。** Antigravity 自动更新会替换 `app.asar`，界面将回到英文，重新执行 `zh` 即可。更新后新增的界面文本可能尚未收录在词典中。
-- **务必保留备份文件。** 首次运行会在应用的 `resources` 目录生成 `app.asar.clean-backup`，这是还原英文的唯一依据；每次切换还会另存一份带时间戳的备份。删除 `clean-backup` 且没有其他未打补丁的备份时，只能重装或等待官方更新来恢复。
-- **可能影响应用的完整性校验与技术支持。** 修改过的客户端可能无法通过官方签名或完整性检查，也可能影响你从官方获得支持的资格。遇到任何异常，请先执行 `en` 还原为官方原版，再判断问题是否与本工具有关。
-- **翻译只覆盖界面文本。** 模型的回复内容、代码、终端输出、你自己输入的文字都不会被改动。
+- **Antigravity must be closed.** The tool requests a graceful shutdown and waits up to 20 seconds so the app can save its state. It force-terminates only after the timeout. Save unfinished work first, or close the app yourself and use `--no-kill`.
+- **Official updates overwrite the patch.** Run `zh` again after an update. Newly added UI text may not be translated yet.
+- **Keep the backup files.** The first run creates `app.asar.clean-backup` in the app's `resources` directory. It is the primary restore source. Deleting it without another pristine backup may require reinstalling Antigravity to recover the official files.
+- **Modified files may affect integrity checks and official support.** If the app behaves unexpectedly, run `en` first and check whether the issue remains.
+- **Only interface text is translated.** Model responses, source code, terminal output, and your own input are not rewritten.
 
-## 安全与隐私
+## Security and privacy
 
-安装依赖或使用 `npx` 首次下载时，npm 会按正常流程访问 npm Registry；安装完成后，CLI 本身只在本地运行，不主动联网，也不收集任何数据。具体来说：
+Installing dependencies or using `npx` for the first time makes the normal npm Registry requests. After installation, the CLI runs locally and does not make its own network requests or collect telemetry.
 
-- 代码中没有任何网络请求、遥测或统计上报，你可以检索 `fetch`、`http`、`XMLHttpRequest` 自行确认。
-- 注入到应用中的翻译引擎会遍历当前页面的可翻译 DOM 文本节点，并读取少量无障碍属性来匹配界面词条；它不会保存、上传或通过网络处理这些内容，不接触 `localStorage`、Cookie、IPC 通道，也不会把会话内容、账号信息或 API 凭据发送到任何地方。
-- 代码编辑器（Monaco）、终端（xterm）、可编辑区域与日志区域被显式排除在翻译范围之外，你的代码和命令输出不会被改写。
-- 唯一被修改的文件是应用安装目录下的 `app.asar`，以及同目录内由本工具生成的备份和状态文件。不写注册表，不安装服务，不创建自启动项。
-- 调用外部程序时一律以参数数组传递路径，不经过 shell 拼接，因此含特殊字符的路径无法被解释为命令。
+- The injected translator traverses translatable DOM text nodes and reads a small set of accessibility attributes to find UI strings. It does not store, upload, or network-process that content, access `localStorage`, cookies, or IPC channels, or send session content, account information, or API credentials anywhere.
+- Monaco, xterm, editable areas, and log areas are explicitly excluded from translation.
+- The tool modifies only `app.asar` and the backup/state files it creates beside it. It does not modify the registry, install services, or create startup entries.
+- External commands receive paths as argument arrays rather than shell-interpolated strings.
 
-## 参与贡献
+## Contributing
 
-发现未翻译或翻译不当的界面文本，在 [`src/locales/zh-CN.json`](./src/locales/zh-CN.json) 的 `text` 字典里增改一行即可：
+To add or correct a static translation, edit the `text` dictionary in [src/locales/zh-CN.json](./src/locales/zh-CN.json):
 
 ```json
-"Original Text": "中文翻译"
+"Original Text": "Chinese translation"
 ```
 
-提交前运行 `npm test` 校验语言包格式。含运行时数值的文本需要新增动态规则，写法见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+Run `npm test` before submitting changes. Dynamic text with runtime values needs a rule in the `patterns` array. See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
-引擎本身不含语言数据，因此新增其他语言只需添加一个 `src/locales/<语言代码>.json`，无需改动 JS 代码。欢迎提交其他语言的语言包。
+Additional locales can be added as `src/locales/<locale-code>.json` files without changing the JavaScript engine.
 
-## 免责声明
+## Disclaimer
 
-本项目是独立的第三方工具，与 Google 及 Antigravity 官方团队没有任何关联，未获其授权或背书。Antigravity 是 Google 的产品，相关名称和商标归其所有者所有。
+This is an independent third-party tool and is not affiliated with, authorized by, or endorsed by Google or the Antigravity team. Antigravity is a Google product; its name and trademarks belong to their respective owners.
 
-本软件按"原样"提供，不附带任何形式的明示或默示担保。使用者自行承担因使用本工具而产生的全部风险，包括但不限于应用无法启动、数据丢失、功能异常、失去官方技术支持，或违反相关服务条款可能带来的后果。作者与贡献者不对任何直接或间接损失负责。详见 [LICENSE](./LICENSE)。
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. You use it at your own risk, including the risks of application failure, data loss, unexpected behavior, loss of official support, or consequences under applicable terms of service. The authors and contributors are not liable for any resulting direct or indirect loss. See [LICENSE](./LICENSE).
 
-请在使用前确认修改客户端不违反你所适用的 Antigravity 服务条款。若你所处的环境不允许修改应用程序，请勿使用本工具。
+Make sure modifying the client is permitted in your environment and does not violate the terms that apply to your use of Antigravity.
 
-## 许可证
+## License
 
 [MIT](./LICENSE)

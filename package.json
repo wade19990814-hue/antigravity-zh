@@ -46,6 +46,7 @@
     "bin/",
     "src/",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ]
 }
