@@ -75,38 +75,6 @@ Options:
 - 唯一被修改的文件是应用安装目录下的 `app.asar`，以及同目录内由本工具生成的备份和状态文件。不写注册表，不安装服务，不创建自启动项。
 - 调用外部程序时一律以参数数组传递路径，不经过 shell 拼接，因此含特殊字符的路径无法被解释为命令。
 
-## 工作原理
-
-```mermaid
-flowchart LR
-    A[执行 zh] --> B[备份当前 app.asar]
-    B --> C[解包]
-    C --> D[编译 zh-CN.json 并注入引擎与菜单片段]
-    D --> E[语法检查后重新打包]
-    E --> F[覆盖 app.asar]
-
-    G[执行 en] --> H[校验 clean-backup 未被打补丁]
-    H --> I[覆盖还原 app.asar]
-```
-
-翻译引擎与语言数据完全分离：`src/patches/engine.jsfrag` 不含任何语言内容，词条、动态正则、标点映射全部由 `src/locales/zh-CN.json` 提供，构建时注入。引擎通过 `MutationObserver` 跟踪 React 的动态渲染，因此路由切换、弹窗、异步加载的内容也会被翻译。
-
-注入块由哨兵注释界定，重复执行不会叠加，同一输入产出的归档逐字节一致。
-
-## 项目结构
-
-```text
-bin/cli.js                     命令行入口
-src/index.js                   补丁注入与还原调度
-src/detector.js                安装路径探测与进程管理
-src/locale.js                  语言包加载、校验与片段编译
-src/locales/zh-CN.json         简体中文语言数据
-src/locales/locale.schema.json 语言包字段契约
-src/patches/engine.jsfrag      语言中立的 DOM 翻译引擎模板
-src/patches/menu.jsfrag        语言中立的原生菜单模板
-test/                          语言包、DOM 遍历与注入幂等性测试
-```
-
 ## 参与贡献
 
 发现未翻译或翻译不当的界面文本，在 [`src/locales/zh-CN.json`](./src/locales/zh-CN.json) 的 `text` 字典里增改一行即可：
