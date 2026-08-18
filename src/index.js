@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const {
     resolveAppPaths,
     stopAntigravityProcesses,
@@ -143,7 +143,9 @@ function extractAsar(asarPath, destDir) {
         const asar = require('@electron/asar');
         asar.extractAll(asarPath, destDir);
     } catch {
-        execSync(`npx --yes @electron/asar extract "${asarPath}" "${destDir}"`, { stdio: 'inherit' });
+        // Arguments are passed as an array so a path containing shell
+        // metacharacters cannot be interpreted as a command.
+        runNpx(['@electron/asar', 'extract', asarPath, destDir]);
     }
 }
 
@@ -156,8 +158,27 @@ async function packAsar(srcDir, destAsarPath) {
             unpackDir: 'node_modules/chrome-devtools-mcp'
         });
     } catch {
-        execSync(`npx --yes @electron/asar pack --unpack-dir "node_modules/chrome-devtools-mcp" "${srcDir}" "${destAsarPath}"`, { stdio: 'inherit' });
+        runNpx([
+            '@electron/asar', 'pack',
+            '--unpack-dir', 'node_modules/chrome-devtools-mcp',
+            srcDir, destAsarPath
+        ]);
     }
+}
+
+/**
+ * Invoke the bundled asar CLI without going through a shell.
+ *
+ * The install directory comes from --app-dir or platform probing and ends up in
+ * these arguments. Interpolating it into a shell string would let a path such as
+ * `C:\x" & calc & "` execute arbitrary commands, so every argument is passed
+ * separately instead.
+ *
+ * @param {string[]} args
+ */
+function runNpx(args) {
+    const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    execFileSync(npx, ['--yes', ...args], { stdio: 'inherit', shell: false });
 }
 
 function getFormatTimestamp() {
@@ -429,9 +450,11 @@ if (!electron_1.app.commandLine.hasSwitch('lang')) {
 
         // 4. Syntax verification
         console.log('Checking JavaScript syntax...');
-        execSync(`node --check "${mainPath}"`);
-        execSync(`node --check "${menuPath}"`);
-        execSync(`node --check "${preloadPath}"`);
+        // process.execPath and array arguments keep this shell-free, so a temp
+        // path with shell metacharacters cannot execute anything.
+        for (const file of [mainPath, menuPath, preloadPath]) {
+            execFileSync(process.execPath, ['--check', file], { stdio: 'inherit', shell: false });
+        }
 
         // 5. Repack asar
         console.log('Packing patched app.asar...');

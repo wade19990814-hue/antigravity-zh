@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { execSync, spawn } = require('child_process');
+const { execSync, execFileSync, spawn } = require('child_process');
 
 // Name of the state marker written next to app.asar. It records what this tool
 // last did, so language detection never has to guess from archive internals.
@@ -252,7 +252,9 @@ function launchAntigravity(appDir) {
             }
         } else if (platform === 'darwin') {
             const appBundle = appDir.includes('.app') ? appDir.substring(0, appDir.indexOf('.app') + 4) : '/Applications/Antigravity.app';
-            execSync(`open -a "${appBundle}"`, { stdio: 'ignore' });
+            // The bundle path derives from --app-dir, so it is passed as an
+            // argument rather than interpolated into a shell string.
+            execFileSync('open', ['-a', appBundle], { stdio: 'ignore', shell: false });
         } else {
             // Linux
             const binPath = path.join(appDir, 'antigravity');
