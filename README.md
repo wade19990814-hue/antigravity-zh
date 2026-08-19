@@ -2,7 +2,7 @@
 
 [简体中文](./README.zh-CN.md)
 
-One-command Simplified Chinese localization for the [Google Antigravity](https://antigravity.google/) desktop app, with byte-exact restore to the official English version.
+One-command Simplified Chinese localization for the [Google Antigravity](https://antigravity.google/) desktop app, with instant rollback to the official English version.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
@@ -10,45 +10,34 @@ One-command Simplified Chinese localization for the [Google Antigravity](https:/
 
 ---
 
-## Core Design: Safe, Reliable, and Non-Invasive
+## Features
 
-antigravity-zh is designed with strict engineering restraint, focusing on **zero friction**, **system safety**, and **deterministic rollback**:
-
-- **Zero Friction**: No repo cloning or global installation required. A single `npx` command automatically discovers the installation path, gracefully manages the application process, and applies the patch.
-- **Safe by Design**: Modifies only shell UI and native menu labels. The code editor (Monaco), terminal (xterm), LLM prompt/output streams, and logs are **explicitly isolated**, ensuring zero interference with your code or workspace.
-- **Zero Telemetry**: Runs completely offline with no network requests, no telemetry collection, and no access to sessions, cookies, tokens, or API credentials. Does not write to the registry or install background services. Subprocess calls strictly use argument arrays to prevent shell injection.
-- **Byte-Exact Restore**: Automatically secures a pristine backup (`app.asar.clean-backup`) on the first run. Running `en` restores the archive with byte-for-byte exactness matching the original official build.
-
----
-
-## Scope and Coverage
-
-The tool unpacks the application's `app.asar`, injects a lightweight translation runtime alongside the locale dictionary into the renderer process, and adapts native menus.
-
-- **Static Interface**: Covers 600+ core UI, settings, and navigation labels.
-- **Native Menus**: Deeply translates application title bar and context menus (28+ labels).
-- **Dynamic Rules**: Supports runtime dynamic text interpolation (13+ regex pattern rules for expressions like `Thought for 5s` and `3 tasks running`).
+- **Zero-install**: Run directly with a single `npx` command. Automatically detects the installation path and restarts the app.
+- **Non-invasive**: Translates only the shell UI and native menus. Code editors (Monaco), terminals (xterm), and LLM conversation areas remain completely untouched.
+- **Byte-exact restore**: Backs up the original `app.asar` on first run. Run `en` at any time to restore the official pristine files.
+- **Offline & private**: Zero network requests, zero telemetry, and no access to tokens, sessions, or credentials.
+- **Comprehensive coverage**: Includes 600+ static UI labels, 28+ native menu items, and dynamic status text patterns (e.g. `Thought for 5s`).
 
 ---
 
-## Installation and Usage
+## Usage
 
-Requires Node.js 16 or later.
+Requires Node.js (≥16).
 
-### Recommended (No Installation)
+### Quick start
 
 ```bash
 # Switch to Simplified Chinese
 npx antigravity-zh zh
 
-# Restore the official English version
+# Restore official English
 npx antigravity-zh en
 
-# Check current language, installation path, and backup status
+# Check current status and backups
 npx antigravity-zh status
 ```
 
-### Run from Source
+### Run from source
 
 ```bash
 git clone https://github.com/wade19990814-hue/antigravity-zh.git
@@ -57,59 +46,52 @@ npm install
 node bin/cli.js zh
 ```
 
-### Commands and Options
+### Options
 
 ```text
 Commands:
   zh                Switch to Simplified Chinese
-  en                Restore the official English version
+  en                Restore official English
   status            Show language, installation path, and backup status
   locales           List bundled locales
 
 Options:
-  --app-dir <path>  Specify the Antigravity installation directory
-  --locale <code>   Select a locale (default: zh-CN)
+  --app-dir <path>  Specify custom Antigravity installation path
+  --locale <code>   Select locale (default: zh-CN)
   --no-restart      Do not restart the app after patching
-  --no-kill         Do not stop Antigravity automatically (close it manually first)
-  --force           Skip the graceful shutdown wait and force-terminate immediately
+  --no-kill         Do not automatically close the running app
+  --force           Skip graceful wait and force-kill process
   -h, --help        Show help
-  -v, --version     Show the version
+  -v, --version     Show version
 ```
 
 ---
 
-## Important Notes and Technical Details
+## Notes
 
-**This tool modifies an installed application archive. Please review this section before proceeding:**
-
-1. **Process Management & Graceful Exit**: Modifying `app.asar` requires Antigravity to be closed. The tool requests a graceful exit and waits up to 20 seconds for the app to save its state before force-terminating. Save your work first, or close the app manually and use `--no-kill`.
-2. **Official Updates**: Official Antigravity updates will replace `app.asar`, automatically returning the interface to the official English version. Simply run `npx antigravity-zh zh` again to reapply the patch. This tool does not interfere with official auto-update mechanisms.
-3. **Backup File Management**: The initial run generates `app.asar.clean-backup` in the `resources` directory, serving as the benchmark for English restoration. Do not delete this file.
-4. **Security Boundaries**: The translation runtime only inspects visible DOM text nodes for matching and never accesses `localStorage`, cookies, IPC channels, or sensitive file paths.
+1. **Save your work**: The tool waits up to 20 seconds for the app to exit cleanly and save state. It is recommended to save unfinished work before running.
+2. **Official updates**: Official updates overwrite `app.asar`. Simply run `npx antigravity-zh zh` again after updating.
+3. **Backup files**: The initial run creates `app.asar.clean-backup` in the `resources` directory as the baseline for restoration. Do not delete it manually.
 
 ---
 
 ## Contributing
 
-To add or correct UI translations, edit the `text` dictionary in [`src/locales/zh-CN.json`](./src/locales/zh-CN.json):
+Contributions are welcome! To fix or add translations, edit the `text` dictionary in [`src/locales/zh-CN.json`](./src/locales/zh-CN.json):
 
 ```json
 "Original Text": "Chinese translation"
 ```
 
-- Run `npm test` before submitting PRs to validate the locale formatting and test suite.
-- Dynamic text with runtime values requires a pattern rule in the `patterns` array (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
-- The runtime engine is decoupled from locale dictionaries. Adding another language only requires adding a `src/locales/<locale-code>.json` file without altering the JavaScript core.
+Please run `npm test` before submitting PRs.
 
 ---
 
 ## Disclaimer
 
-This is an independent third-party open-source project and is not affiliated with, authorized by, or endorsed by Google or the Antigravity team. Antigravity is a Google product; its name and trademarks belong to their respective owners.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. You assume all risks associated with the use of this tool, including but not limited to application failures, data loss, unexpected behavior, loss of official technical support, or consequences under applicable terms of service. The authors and contributors are not liable for any resulting direct or indirect loss. See [LICENSE](./LICENSE).
-
-Ensure that modifying the client is permitted in your environment and does not violate any terms applicable to your use of Antigravity.
+1. **This project is for personal learning, study, and research purposes only. Please do not use it for commercial purposes.**
+2. This is an independent open-source tool and is not affiliated with, endorsed by, or authorized by Google. Antigravity and related trademarks belong to their respective owners.
+3. Modifying the client is at your own risk. The authors assume no responsibility for any unexpected issues, data loss, or other consequences.
 
 ---
 
