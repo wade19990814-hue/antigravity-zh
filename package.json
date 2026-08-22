@@ -1,6 +1,6 @@
 {
   "name": "antigravity-zh",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "为 Google Antigravity 桌面端启用简体中文界面，并支持一条命令还原官方英文。One-command Simplified Chinese localization for the Antigravity desktop app, with byte-exact restore.",
   "main": "src/index.js",
   "bin": {
