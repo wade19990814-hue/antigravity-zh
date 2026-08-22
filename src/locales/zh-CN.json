@@ -62,6 +62,16 @@
       "sample": "94.4 % of the customization budget is available."
     },
     {
+      "id": "customizationBudgetSuffix",
+      "pattern": "^%\\s+of\\s+the\\s+customization\\s+budget\\s+is\\s+available(\\.?)$",
+      "flags": "i",
+      "template": "% 的自定义预算可用{1}",
+      "replace": {
+        "1": "period"
+      },
+      "sample": "% of the customization budget is available."
+    },
+    {
       "id": "showBreakdowns",
       "pattern": "^Show (\\d+) breakdowns?$",
       "flags": "i",
@@ -121,8 +131,22 @@
       "sample": "7 tasks running"
     },
     {
+      "id": "seeAll",
+      "pattern": "^See all \\(([\\d,]+)\\)$",
+      "flags": "i",
+      "template": "查看全部（{1}）",
+      "sample": "See all (48)"
+    },
+    {
+      "id": "activeConversations",
+      "pattern": "^([\\d,]+) active conversations$",
+      "flags": "i",
+      "template": "{1} 个活跃对话",
+      "sample": "70 active conversations"
+    },
+    {
       "id": "tokenUsage",
-      "pattern": "^(Rules|Skills):\\s*(\\d+)\\s*tokens?$",
+      "pattern": "^(Rules|Skills|Mcp Tools):\\s*([\\d,]+)\\s*tokens?$",
       "flags": "i",
       "template": "{1}：{2} 个 token",
       "replace": {
@@ -145,7 +169,8 @@
     "preset": {
       "Default": "默认",
       "Security Preset": "安全预设",
-      "Artifact Review Policy": "Artifact 审查策略"
+      "Artifact Review Policy": "Artifact 审查策略",
+      "Inherit General": "继承常规设置"
     },
     "period": {
       ".": "。",
@@ -153,7 +178,8 @@
     },
     "tokenSection": {
       "Rules": "规则",
-      "Skills": "技能"
+      "Skills": "技能",
+      "Mcp Tools": "MCP 工具"
     }
   },
   "valueRules": {
@@ -750,6 +776,42 @@
     "More options": "更多选项",
     "More Actions": "更多操作",
     "Archive conversation": "归档对话",
+    "Show all": "显示全部",
+    "Theme": "主题",
+    "Plugin:": "插件：",
+    "Plugins": "插件",
+    "Browse and enable plugins from the Build With Google catalog.": "浏览并启用 Build With Google 目录中的插件。",
+    "Application": "应用",
+    "Manage Antigravity app settings.": "管理 Antigravity 应用设置。",
+    "Remote Control": "远程控制",
+    "Enable Remote Control": "启用远程控制",
+    "Work with local agents from another device.": "从其他设备使用本地代理。",
+    "Device Name": "设备名称",
+    "Scan the code to open this device in Remote Control, or": "扫描二维码以在远程控制中打开此设备，或",
+    "copy link": "复制链接",
+    "Experimental features": "实验性功能",
+    "Inline Actions": "内联操作",
+    "Manage how Best of N sets up the workspaces its arms run in.": "配置 Best of N 为其运行分支设置工作区的方式。",
+    "This migration may mess up your settings, chats, and sidebar.": "此次迁移可能会弄乱您的设置、聊天和侧边栏。",
+    "Follow the guide at": "请按照以下指南操作：",
+    "to back up your data and run the migration.": "以备份数据并运行迁移。",
+    "Enter bot name (optional)": "输入机器人名称（可选）",
+    "Enter avatar URL (optional)": "输入头像 URL（可选）",
+    "Refresh MCP servers": "刷新 MCP 服务端",
+    "Delete server": "删除服务端",
+    "Enter device name...": "输入设备名称...",
+    "Show Remote Control QR code": "显示远程控制二维码",
+    "Remote Control link": "远程控制链接",
+    "tokens)": "个 token)",
+    "Permanently delete": "永久删除",
+    "including": "包括",
+    "Delete": "删除",
+    "Delete plugin": "删除插件",
+    "Delete 项目": "删除项目",
+    "Edit project name": "编辑项目名称",
+    "Full machine": "完全机器访问",
+    "Inherit General": "继承常规设置",
+    "Loading token usage...": "正在加载 Token 使用量...",
     "Mark as Read": "标记为已读",
     "Conversation": "对话",
     "New": "新建",
